@@ -4,11 +4,6 @@ const questions = [{
     options: ['Karachi', 'Lahore', 'Islamabad', 'Peshawar'],
     answer: "Islamabad"
 },
-{
-    question: "Current  Prime Minister of Pakistan",
-    options: ['Shahbaz Sharif', 'Imran Khan', 'Nawaz Sharif', 'Bilawal Bhutto'],
-    answer: "Shahbaz Sharif"
-},
 
 {
     question: "JavaScript can be used for which tech stack",

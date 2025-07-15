@@ -16,17 +16,27 @@ const Quiz = () => {
 
     useEffect(() => {
         if (showScore) {
-            localStorage.setItem('score', JSON.stringify({score, total: questions.length, Date: new Date().toLocaleString()}));
+            localStorage.setItem('score', JSON.stringify({ score, total: questions.length, Date: new Date().toLocaleString() }));
         }
     }, [showScore, score]);
 
 
-    useEffect(() => {
-        const stored = JSON.parse(localStorage.getItem('score'));
-        if (stored) {
-            console.log("Previous Results:", stored);
-        }
-    }),[]
+   useEffect(() => {
+  if (showScore) {
+    const previousResults = JSON.parse(localStorage.getItem("scoreHistory")) || [];
+
+    const newEntry = {
+      score,
+      total: questions.length,
+      Date: new Date().toLocaleString(),
+    };
+
+    localStorage.setItem("scoreHistory", JSON.stringify([...previousResults, newEntry]));
+  }
+}, [showScore, score]);
+
+
+
     const handleOptionClick = (questionIndex, option) => {
         setSelectOption(prev => ({ ...prev, [questionIndex]: option }));
     }
@@ -50,17 +60,17 @@ const Quiz = () => {
     }
     return (
         <div className="container">
-            {showScore ? 
-            (<ScoreSection score={score} total={questions.length} restartQuiz={restartQuiz} />) : quizFinished ? (<ScoreReveal handleShowScore={handleShowScore} />) : 
-            (
-                <QuestionSection currentQuestion={currentQuestion}
-                    questions={questions}
-                    selectedOptions={selectOption}
-                    handleOptionClick={handleOptionClick}
-                    handleSubmit={handleSubmit}
+            {showScore ?
+                (<ScoreSection score={score} total={questions.length} restartQuiz={restartQuiz} />) : quizFinished ? (<ScoreReveal handleShowScore={handleShowScore} />) :
+                    (
+                        <QuestionSection currentQuestion={currentQuestion}
+                            questions={questions}
+                            selectedOptions={selectOption}
+                            handleOptionClick={handleOptionClick}
+                            handleSubmit={handleSubmit}
 
-                />
-            )}
+                        />
+                    )}
         </div>
     )
 }

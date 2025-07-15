@@ -7,7 +7,7 @@ const QuestionSection = ({
 }) => {
     return (
     <div className="container py-5">
-      <h3 className="mb-4 text-center">📝 Answer These Questions</h3>
+      <h3 className="mb-4 text-center"> Answer These Questions</h3>
       <div className="row">
         {questions.map((q, index) => (
           <div className="col-12 mb-4" key={index}>

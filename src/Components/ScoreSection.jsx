@@ -5,21 +5,43 @@ const ScoreSection = ({score, totalScore, restartQuiz}) =>{
 
 
     const [previousScore, setPreviousScore] = useState(null);
-    useEffect(() => {
-        const stored = JSON.parse(localStorage.getItem('score'));
-        if(stored) {
-            setPreviousScore(stored); }
-    }, []);
+    
+    useEffect(() =>{
+        const history = JSON.parse(localStorage.getItem("scoreHistory")) || []
 
-    return(
-        <div className="scoreSection">
-            <h2>Your marks are {score} out of {questions.length}</h2>
-            {previousScore ? (
-                <h3>Your Previous marks were {previousScore.score} out of {previousScore.total} on{previousScore.Date}</h3>
-            ) : (<p>No previous data found</p>)}
-            
-            <button onClick={restartQuiz}>Restart Quiz</button>
+        if (history.length >= 2) {
+            setPreviousScore(history[history.length -2])
+        }
+    },[]);
+
+ return (
+    <div className="container d-flex flex-column align-items-center justify-content-center vh-100">
+        <div className="card text-center shadow p-4" style={{ maxWidth: "500px", width: "100%" }}>
+            <div className="card-body">
+                <h2 className="card-title text-primary mb-3">
+                     Your Score
+                </h2>
+
+                <h4 className="mb-3">
+                    You scored <strong>{score}</strong> out of <strong>{questions.length}</strong>
+                </h4>
+
+                {previousScore ? (
+                    <p className="text-muted">
+                        Last attempt: <br />
+                        {previousScore.score} / {previousScore.total} on <em>{previousScore.Date}</em>
+                    </p>
+                ) : (
+                    <p className="text-warning">No previous data found</p>
+                )}
+
+                <button className="btn btn-success mt-3" onClick={restartQuiz}>
+                     Restart Quiz
+                </button>
+            </div>
         </div>
-    )
+    </div>
+);
+
 }
 export default ScoreSection;
