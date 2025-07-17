@@ -1,11 +1,12 @@
 import React, { useState, useEffect, use } from "react";
 import questions from "./Question_data";
-import attemptResult from "./attemptResult";
+import AttemptResult from "./attemptResult";
 
-const ScoreSection = ({ score, totalScore, restartQuiz, timeTaken, attempt }) => {
+const ScoreSection = ({ score, totalScore, restartQuiz, timeTaken }) => {
 
 
     const [previousScore, setPreviousScore] = useState(null);
+    const [showResult, setShowResult] = useState(false)
 
     useEffect(() => {
         const history = JSON.parse(localStorage.getItem("scoreHistory")) || []
@@ -15,6 +16,9 @@ const ScoreSection = ({ score, totalScore, restartQuiz, timeTaken, attempt }) =>
         }
     }, []);
 
+    if (showResult) {
+        return   <AttemptResult />
+    }
     return (
         <div className="container d-flex flex-column align-items-center justify-content-center vh-100">
             <div className="card text-center shadow p-4" style={{ maxWidth: "500px", width: "100%" }}>
@@ -44,7 +48,7 @@ const ScoreSection = ({ score, totalScore, restartQuiz, timeTaken, attempt }) =>
                         <button className="btn btn-success mt-3" onClick={restartQuiz}>
                             Restart Quiz
                         </button>
-                        <button className="btn btn-danger mt-3" onClick={attemptResult}>
+                        <button className="btn btn-danger mt-3" onClick={() => setShowResult(true)}>
                             View Results
                         </button>
                     </div>
