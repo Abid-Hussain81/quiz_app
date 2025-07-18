@@ -41,7 +41,7 @@ const QuestionSection = ({
                 ))}
             </div>
 
-            {/* Show Answer Button */}
+ 
             {isWrong && !showAnswer && (
                 <button
                     className="btn mt-3"
@@ -51,7 +51,7 @@ const QuestionSection = ({
                 </button>
             )}
 
-            {/* Actual Answer */}
+  
             {showAnswer && (
                 <div className="alert alert-info mt-3 fw-bold">
                      Correct Answer: {question.answer}
@@ -70,7 +70,7 @@ const QuestionSection = ({
                     <button
                         className="btn btn-primary"
                         onClick={handleNext}
-                        disabled={!selected}
+                        // disabled={!selected}
                     >
                         Next
                     </button>
@@ -78,7 +78,7 @@ const QuestionSection = ({
                     <button
                         className="btn btn-success"
                         onClick={handleSubmit}
-                        disabled={!selected}
+                        // disabled={!selected}
                     >
                         Submit Quiz
                     </button>
