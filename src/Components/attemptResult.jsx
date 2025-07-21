@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import questions from "./Question_data";
-import Start from "./start";
+import { useNavigate } from "react-router-dom";
+
 
 const AttemptResult = () => {
+    const navigate = useNavigate()
     const [selectedOptions, setSelectedOptions] = useState({});
+
+    const BackToStart = () =>{
+        navigate("/")
+    }
 
     useEffect(() => {
         const storedOptions = JSON.parse(localStorage.getItem("selectedOption"));
@@ -60,9 +66,7 @@ const AttemptResult = () => {
                     </div>
                 );
             })}
-            <a href="./Quiz.jsx" className="btn btn-primary mt-3">
-                Back to Quiz
-            </a>
+            <button className="btn btn-primary" onClick={BackToStart}>ReTake Quiz</button>
 
         </div>
     );

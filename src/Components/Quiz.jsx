@@ -3,53 +3,36 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import questions from "./Question_data";
 import ScoreSection from "./ScoreSection";
 import QuestionSection from "./QuestionSection";
-import Start from "./start";
+import { useNavigate } from "react-router-dom";
 
 const Quiz = () => {
     const questionDuration = 10;
 
-    const [started, setStarted] = useState(false);
+    const [shuffledQuestions, setShuffledQuestions] = useState([]);
     const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [selectOption, setSelectOption] = useState({});
     const [score, setScore] = useState(0);
     const [showScore, setShowScore] = useState(false);
+    const [selectedOptions, setSelectOption] = useState({});
+    const [timeLeft, setTimeLeft] = useState(questionDuration);
+    const [questionExpired, setQuestionExpired] = useState(false);
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
-    const [questionExpired, setQuestionExpired] = useState(false);
-    const [shuffledQuestions, setShuffledQuestions] = useState([]);
-    const [questionTimers, setQuestionTimers] = useState({}); // 💡 time left per question
-    const [timeLeft, setTimeLeft] = useState(questionDuration);
+    const [questionTimers, setQuestionTimers] = useState({});
 
-    const shuffleArray = (arr) => {
-        const shuffled = [...arr];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled;
-    };
+    const navigate = useNavigate();
 
+    // Start quiz by shuffling questions and setting start time
     const startQuiz = () => {
-        const shuffled = questions.map(q => ({
-            ...q,
-            options: shuffleArray(q.options),
-        }));
+        const shuffled = [...questions].sort(() => Math.random() - 0.5);
         setShuffledQuestions(shuffled);
-
-        const initialTimers = {};
-        for (let i = 0; i < shuffled.length; i++) {
-            initialTimers[i] = questionDuration;
-        }
-        setQuestionTimers(initialTimers);
-
-        setStarted(true);
         setStartTime(new Date());
     };
 
+    // Track time for each question
     useEffect(() => {
-        if (!started || showScore) return;
+        if (showScore) return;
 
-        setTimeLeft(questionTimers[currentQuestion]);
+        setTimeLeft(questionTimers[currentQuestion] || questionDuration);
         setQuestionExpired(false);
 
         const timer = setInterval(() => {
@@ -60,7 +43,6 @@ const Quiz = () => {
                     return 0;
                 }
 
-                // ⏱️ update the timer only for this question
                 setQuestionTimers(timers => ({
                     ...timers,
                     [currentQuestion]: prev - 1
@@ -70,54 +52,40 @@ const Quiz = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [currentQuestion, started, showScore]);
+    }, [currentQuestion, showScore]);
 
-    useEffect(() => {
-        if (questionExpired) {
-            if (currentQuestion < shuffledQuestions.length - 1) {
-                setCurrentQuestion(prev => prev + 1);
-            } else {
-                handleSubmit();
-            }
-        }
-    }, [questionExpired]);
-
-    useEffect(() => {
-        if (showScore && startTime && endTime) {
-            const timeTaken = Math.round((endTime - startTime) / 1000);
-            const result = {
-                score,
-                total: shuffledQuestions.length,
-                Date: endTime.toLocaleString(),
-                timeTaken: `${timeTaken} seconds`
-            };
-
-            localStorage.setItem("score", JSON.stringify(result));
-            const history = JSON.parse(localStorage.getItem("scoreHistory")) || [];
-            localStorage.setItem("scoreHistory", JSON.stringify([...history, result]));
-        }
-    }, [showScore, score, endTime]);
-
+    // Handle answer selection
     const handleOptionClick = (questionIndex, option) => {
-        setSelectOption(prev => ({ ...prev, [questionIndex]: option }));
+        if (selectedOptions[questionIndex]) return;
+
+        const correct = shuffledQuestions[questionIndex].answer;
+        if (option === correct) setScore(score + 1);
+
+        setSelectOption({ ...selectedOptions, [questionIndex]: option });
     };
 
-    const handleSubmit = () => {
-        let newScore = 0;
-        shuffledQuestions.forEach((q, index) => {
-            if (selectOption[index] === q.answer) {
-                newScore++;
-            }
-        });
+    // Go to next question
+    const handleNext = () => {
+        if (currentQuestion < shuffledQuestions.length - 1) {
+            setCurrentQuestion(currentQuestion + 1);
+        }
+    };
 
-        localStorage.setItem("selectedOption", JSON.stringify(selectOption));
-        setScore(newScore);
+    // Go to previous question
+    const handlePrev = () => {
+        if (currentQuestion > 0) {
+            setCurrentQuestion(currentQuestion - 1);
+        }
+    };
+
+    // Submit quiz
+    const handleSubmit = () => {
         setEndTime(new Date());
         setShowScore(true);
     };
 
+    // Restart quiz
     const restartQuiz = () => {
-        setStarted(false);
         setCurrentQuestion(0);
         setScore(0);
         setShowScore(false);
@@ -126,53 +94,37 @@ const Quiz = () => {
         setStartTime(null);
         setEndTime(null);
         setQuestionTimers({});
+        startQuiz(); // restart logic
     };
 
-    const handleNext = () => {
-        if (currentQuestion < shuffledQuestions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentQuestion > 0) {
-            setCurrentQuestion(currentQuestion - 1);
-        }
-    };
+    useEffect(() => {
+        startQuiz();
+    }, []);
 
     return (
-        <div className="container mt-4">
-            {!started ? (
-                <Start startQuiz={startQuiz} call="Ready to Start The Quiz" />
-            ) : showScore ? (
+        <div className="mb-5">
+            {showScore ? (
                 <ScoreSection
                     score={score}
-                    totalScore={shuffledQuestions.length}
+                    totalQuestions={shuffledQuestions.length}
                     restartQuiz={restartQuiz}
-                    timeTaken={endTime && startTime ? Math.round((endTime - startTime) / 1000) : null}
+                    startTime={startTime}
+                    endTime={endTime}
                 />
             ) : (
-                <>
-                    <div
-                        className="alert text-center fw-bold"
-                        style={{
-                            backgroundColor: "#e9f5ff",
-                            color: "#000",
-                        }}
-                    >
-                        Time Left: {timeLeft} seconds
-                    </div>
-
+                shuffledQuestions.length > 0 && (
                     <QuestionSection
                         currentQuestion={currentQuestion}
                         questions={shuffledQuestions}
-                        selectedOptions={selectOption}
+                        selectedOptions={selectedOptions}
                         handleOptionClick={handleOptionClick}
                         handleSubmit={handleSubmit}
                         handlePrev={handlePrev}
                         handleNext={handleNext}
+                        timeLeft={timeLeft}
+                        questionExpired={questionExpired}
                     />
-                </>
+                )
             )}
         </div>
     );
